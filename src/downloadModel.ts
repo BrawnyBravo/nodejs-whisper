@@ -81,13 +81,11 @@ async function downloadModel(logger: Logger = console) {
 | large-v3-turbo | 1.5 GB | ~2.6 GB |
 `)
 
-		  const downloaderScript = process.platform === 'win32'
-		      ? 'download-ggml-model.cmd'
-		      : './download-ggml-model.sh'
-		
-		  if (!shell.which(downloaderScript)) {
-		      throw '[Nodejs-whisper] Error: Downloader not found.\n'
-		  }
+		const downloaderScript = process.platform === 'win32' ? 'download-ggml-model.cmd' : './download-ggml-model.sh'
+
+		if (!shell.which(downloaderScript)) {
+			throw '[Nodejs-whisper] Error: Downloader not found.\n'
+		}
 
 		const modelName = await askForModel()
 
