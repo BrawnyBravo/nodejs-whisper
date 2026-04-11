@@ -68,6 +68,7 @@ const filePath = path.resolve(__dirname, 'YourAudioFileName')
 
 await nodewhisper(filePath, {
 	modelName: 'base.en', //Downloaded models name
+	modelRootPath: '/path/to/whisper/models', // (optional) directory containing the selected ggml model file
 	autoDownloadModelName: 'base.en', // (optional) auto download a model if model is not present
 	removeWavFileAfterTranscription: false, // (optional) remove wav file once transcribed
 	withCuda: false, // (optional) use cuda for faster processing
@@ -111,11 +112,34 @@ Custom CMake flags can be passed with `NODEJS_WHISPER_CMAKE_ARGS`.
 NODEJS_WHISPER_CMAKE_ARGS="-DGGML_NATIVE=OFF" npm test
 ```
 
+When `modelRootPath` is used with `autoDownloadModelName`, downloaded models are saved in that directory.
+
+Docker model cache example:
+
+```yaml
+volumes:
+    - ./.docker-data/whisper-models:/data/whisper-models
+```
+
+```javascript
+await nodewhisper(filePath, {
+    modelName: 'tiny.en',
+    autoDownloadModelName: 'tiny.en',
+    modelRootPath: '/data/whisper-models',
+    whisperOptions: {
+        outputInSrt: true,
+    },
+})
+```
+
+The downloaded model will be stored at `/data/whisper-models/ggml-tiny.en.bin`, while the package's internal downloader scripts remain available.
+
 ## Types
 
 ```
  interface IOptions {
 	modelName: string
+	modelRootPath?: string
 	removeWavFileAfterTranscription?: boolean
 	withCuda?: boolean
 	autoDownloadModelName?: string

@@ -7,6 +7,7 @@ import autoDownloadModel from './autoDownloadModel'
 
 export interface IOptions {
 	modelName: string
+	modelRootPath?: string
 	autoDownloadModelName?: string
 	whisperOptions?: WhisperOptions
 	withCuda?: boolean
@@ -24,7 +25,7 @@ export async function nodewhisper(filePath: string, options: IOptions) {
 			logger.debug('autoDownloadModelName', options.autoDownloadModelName)
 			logger.debug('options', options)
 
-			await autoDownloadModel(logger, options.autoDownloadModelName, options.withCuda)
+			await autoDownloadModel(logger, options.autoDownloadModelName, options.withCuda, options.modelRootPath)
 		}
 
 		logger.debug(`[Nodejs-whisper] Checking file existence: ${filePath}`)
