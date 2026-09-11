@@ -63,7 +63,7 @@ export const constructCommand = (filePath: string, args: IOptions): string => {
 	return command
 }
 
-const constructOptionsFlags = (args: IOptions): string => {
+export const constructOptionsFlags = (args: IOptions): string => {
 	const vadFlags = constructVadFlags(args)
 	let flags = [
 		args.whisperOptions?.outputInCsv ? '-ocsv ' : '',
@@ -79,6 +79,7 @@ const constructOptionsFlags = (args: IOptions): string => {
 		args.whisperOptions?.timestamps_length ? `-ml ${args.whisperOptions.timestamps_length} ` : '',
 		args.whisperOptions?.splitOnWord ? '-sow ' : '',
 		args.whisperOptions?.noGpu ? '-ng ' : '',
+		args.whisperOptions?.noTimestamps ? '-nt ' : '',
 		vadFlags,
 	].join('')
 

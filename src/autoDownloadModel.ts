@@ -3,7 +3,7 @@ import shell from 'shelljs'
 import fs from 'fs'
 import { DOWNLOAD_MODEL_ALIASES, isModelName, LEGACY_MODEL_FILES, MODEL_OBJECT, WHISPER_CPP_PATH } from './constants'
 import { Logger } from './types'
-import { getCmakeConfigureCommand } from './buildConfig'
+import { buildWhisperCpp } from './buildConfig'
 
 export default async function autoDownloadModel(
 	logger: Logger = console,
@@ -52,25 +52,7 @@ export default async function autoDownloadModel(
 		}
 
 		logger.debug('[Nodejs-whisper] Model downloaded. Attempting to build whisper.cpp...')
-		shell.cd(WHISPER_CPP_PATH)
-
-		// Configure CMake build
-		logger.debug('[Nodejs-whisper] Configuring CMake build...')
-		const configureCommand = getCmakeConfigureCommand(withCuda)
-
-		const configResult = shell.exec(configureCommand)
-		if (configResult.code !== 0) {
-			throw new Error(`[Nodejs-whisper] CMake configuration failed: ${configResult.stderr}`)
-		}
-
-		// Build the project
-		logger.debug('[Nodejs-whisper] Building whisper.cpp...')
-		const buildCommand = 'cmake --build build --config Release'
-		const buildResult = shell.exec(buildCommand)
-
-		if (buildResult.code !== 0) {
-			throw new Error(`[Nodejs-whisper] Build failed: ${buildResult.stderr}`)
-		}
+		buildWhisperCpp(logger, withCuda)
 
 		return 'Model downloaded and built successfully'
 	} catch (error) {

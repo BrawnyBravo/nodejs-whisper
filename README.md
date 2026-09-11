@@ -1,5 +1,18 @@
 # nodejs-whisper
 
+> **This is a fork.** Maintained at
+> [BrawnyBravo/nodejs-whisper](https://github.com/BrawnyBravo/nodejs-whisper) for the
+> Big Bear Ready site, forked from
+> [ChetanXpro/nodejs-whisper](https://github.com/ChetanXpro/nodejs-whisper) at 0.3.1.
+> It adds two things: a `noTimestamps` option, and a `nodejs-whisper-prepare`
+> command that downloads the model and compiles whisper.cpp during a Docker
+> build. It is **not published to npm** - install it from the GitHub Release
+> tarball, which carries the whisper.cpp source that a git install would miss:
+>
+> ```bash
+> npm install https://github.com/BrawnyBravo/nodejs-whisper/releases/download/v0.3.1-bbr.1/nodejs-whisper-0.3.1-bbr.1.tgz
+> ```
+
 Node.js bindings for OpenAI's Whisper model.
 
 [![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](https://choosealicense.com/licenses/mit/)
@@ -213,6 +226,7 @@ set `whisperOptions.vad` to `true` and provide its path through `whisperOptions.
 	wordTimestamps?: boolean
 	splitOnWord?: boolean
 	noGpu?: boolean
+	noTimestamps?: boolean
 	vad?: boolean
 	vadModelPath?: string
 	vadThreshold?: number
@@ -224,6 +238,45 @@ set `whisperOptions.vad` to `true` and provide its path through `whisperOptions.
 }
 
 ```
+
+## Fork additions
+
+### Plain text without timestamps
+
+whisper.cpp prefixes every segment with `[HH:MM:SS.mmm --> HH:MM:SS.mmm]`. Set
+`noTimestamps` to pass its `-nt` flag and get prose back instead:
+
+```javascript
+const transcript = await nodewhisper(filePath, {
+	modelName: 'base.en',
+	whisperOptions: { language: 'en', noTimestamps: true },
+})
+```
+
+Off by default, so nothing changes for existing callers.
+
+### Preparing the model and binary at image build time
+
+```bash
+npx nodejs-whisper-prepare --model base.en --model-dir /opt/whisper-models
+```
+
+Downloads the model if it is not already there and compiles whisper.cpp. It asks
+no questions, and an unknown model name, a mistyped flag or a failed compile
+exits non-zero.
+
+In a Dockerfile this moves the download and the compile into the build, so the
+first transcription in production is not the one that pays for them, and the
+compiler toolchain can be dropped from the runtime image. Point
+`modelRootPath` (or whatever environment variable your app reads) at the same
+directory afterwards:
+
+```dockerfile
+RUN npx nodejs-whisper-prepare --model base.en --model-dir /opt/whisper-models
+ENV WHISPER_MODEL_PATH=/opt/whisper-models
+```
+
+`--cuda` configures the build with CUDA support.
 
 ## Run locally
 

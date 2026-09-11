@@ -5,6 +5,45 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.1-bbr.1] - 2026-09-11
+
+Fork of ChetanXpro/nodejs-whisper maintained at BrawnyBravo/nodejs-whisper for
+the Big Bear Ready site. Based on upstream 0.3.1. Released as a GitHub Release
+tarball only; it is deliberately not published to the npm registry.
+
+The version is `0.3.1-bbr.1` and not `0.3.0-bbr.1`: the fork point is upstream
+0.3.1, and a version that understates the code it describes is worse than one
+that does not match the consumer's old lockfile entry.
+
+The `cpp/whisper.cpp` submodule is pinned at
+`f049fff95a089aa9969deb009cdd4892b3e74916` (whisper.cpp v1.9.1). Pinning it is
+the point: the tarball is built with `npm pack` so it carries the whisper.cpp
+source, which a git install would miss because npm does not clone submodules.
+
+### Added
+
+- `whisperOptions.noTimestamps`, which passes whisper.cpp's `-nt` flag. Without
+  it whisper.cpp prefixes every segment with `[HH:MM:SS.mmm --> HH:MM:SS.mmm]`
+  and a caller who wants plain prose has to strip those with a regex.
+- `nodejs-whisper-prepare`, a non-interactive command that downloads a model and
+  compiles whisper.cpp, meant to run inside a Docker build:
+  `npx nodejs-whisper-prepare --model base.en --model-dir /opt/whisper-models`.
+  Doing this at build time means the first transcription in production is not
+  the one that pays for the compile, and the compiler toolchain does not have to
+  stay in the runtime image. It prompts for nothing, and an unknown model name,
+  a mistyped flag or a failed compile exits non-zero so the image build stops.
+- Tests covering the `-nt` flag and the prepare argument parsing.
+
+### Changed
+
+- The whisper.cpp configure-and-build pair moved out of `autoDownloadModel` into
+  an exported `buildWhisperCpp` in `buildConfig.ts`, so the prepare step runs the
+  same two commands rather than a drifting copy. Behaviour is unchanged.
+- `constructOptionsFlags` is exported, so the flag construction can be tested
+  without a compiled binary and a model file on disk.
+
+---
+
 ## [Unreleased]
 
 ### Added
